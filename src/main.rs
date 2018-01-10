@@ -4,6 +4,12 @@ extern crate schnail;
 use schnail::*;
 use pancurses::*;
 
+fn mvaddch_col(window: &Window, y: i32, x: i32, ch: char, color_code: u64) {
+    window.attron(color_code);
+    window.mvaddch(y, x, ch);
+    window.attroff(color_code);
+}
+
 fn main() {
     let window = initscr();
     start_color();
@@ -31,16 +37,9 @@ fn main() {
             );
 
             window.mvaddstr(8, 0, "dice ");
-            window.attron(colours.0);
-
-            window.mvaddch(8, 5, '#');
-            window.attroff(colours.0);
-
+            mvaddch_col(&window, 8, 5, '#', colours.0);
             window.mvaddch(8, 6, ' ');
-            window.attron(colours.1);
-
-            window.mvaddch(8, 7, '#');
-            window.attroff(colours.1);
+            mvaddch_col(&window, 8, 7, '#', colours.1);
         }
 
         board.advance(dice.0);
@@ -48,11 +47,9 @@ fn main() {
         board.draw(&window);
         if let Some(winner) = board.winner() {
             // window.mvaddstr(to_colour_code(&winner) as i32, GOAL as i32*2+8, "winner");
-            let winner_code = to_colour_code(&winner) as u64;
+            let winner_code = COLOR_PAIR(1 + to_colour_code(&winner) as u64);
             window.mvaddstr(9, 0, "winner ");
-            window.attron(COLOR_PAIR(winner_code + 1));
-            window.mvaddch(9, 7, '#');
-            window.attroff(COLOR_PAIR(winner_code + 1));
+            mvaddch_col(&window, 9, 7, '#', winner_code);
             break;
         }
         window.getch();

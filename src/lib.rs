@@ -6,7 +6,8 @@ use pancurses::{Window, COLOR_PAIR};
 use rand::Rng;
 use std::collections::HashMap;
 
-pub const GOAL: i32 = 8;
+const GOAL: i32 = 8;
+const SCALE: i32 = 2;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug, Hash, Clone)]
 pub enum Colour {
@@ -46,6 +47,14 @@ pub fn roll() -> Colour {
     from_colour_code(n).unwrap()
 }
 
+pub fn replicate(count: i32, ch: char) -> String {
+    let mut result = String::new();
+    for _ in 0..count {
+        result.push(ch)
+    }
+    result
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct Board {
     snails: HashMap<Colour, i32>,
@@ -77,20 +86,20 @@ impl Board {
     pub fn draw(&self, window: &Window) {
         for y in 0..6 {
             window.attron(COLOR_PAIR(0));
-            window.mvaddch(y, 2, '|');
-            window.mvaddch(y, GOAL * 2, '|');
+            window.mvaddch(y, SCALE, '|');
+            window.mvaddch(y, GOAL * SCALE, '|');
         }
 
         for y in 0..6 {
             let colour = from_colour_code(y).unwrap();
             let x = self.snails[&colour];
             window.attron(COLOR_PAIR(y as u64 + 1));
-            window.mvaddstr(y, x * 2, "@@");
+            window.mvaddstr(y, x * SCALE, &replicate(SCALE, '@'));
             window.attroff(COLOR_PAIR(y as u64 + 1));
         }
 
         for x in 0..GOAL + 1 {
-            window.mvaddstr(6, x * 2, &format!("{}", x));
+            window.mvaddstr(6, x * SCALE, &format!("{}", x));
         }
     }
 }

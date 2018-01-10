@@ -1,5 +1,5 @@
-extern crate schnail;
 extern crate pancurses;
+extern crate schnail;
 
 use schnail::*;
 use pancurses::*;
@@ -15,7 +15,7 @@ fn main() {
     init_pair(3, COLOR_GREEN, COLOR_BLACK);
     init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
     init_pair(5, COLOR_BLUE, COLOR_BLACK);
-    init_pair(6, COLOR_WHITE, COLOR_BLACK);
+    init_pair(6, COLOR_CYAN, COLOR_BLACK);
 
     let mut board = Board::new();
     board.draw(&window);
@@ -23,34 +23,36 @@ fn main() {
     loop {
         window.clear();
 
-        let (dice1, dice2) = (roll(), roll());
+        let dice = (roll(), roll());
         {
-            let code1 = to_colour_code(&dice1) as u64;
-            let code2 = to_colour_code(&dice2) as u64;
+            let colours = (
+                COLOR_PAIR(1 + to_colour_code(&dice.0) as u64),
+                COLOR_PAIR(1 + to_colour_code(&dice.1) as u64),
+            );
 
             window.mvaddstr(8, 0, "dice ");
-            window.attron(COLOR_PAIR(1 + code1));
+            window.attron(colours.0);
 
             window.mvaddch(8, 5, '#');
-            window.attroff(COLOR_PAIR(1 + code1));
+            window.attroff(colours.0);
 
             window.mvaddch(8, 6, ' ');
-            window.attron(COLOR_PAIR(1 + code2));
+            window.attron(colours.1);
 
             window.mvaddch(8, 7, '#');
-            window.attroff(COLOR_PAIR(1 + code2));
+            window.attroff(colours.1);
         }
 
-        board.advance(dice1);
-        board.advance(dice2);
+        board.advance(dice.0);
+        board.advance(dice.1);
         board.draw(&window);
         if let Some(winner) = board.winner() {
             // window.mvaddstr(to_colour_code(&winner) as i32, GOAL as i32*2+8, "winner");
             let winner_code = to_colour_code(&winner) as u64;
             window.mvaddstr(9, 0, "winner ");
-            window.attron(COLOR_PAIR(1 + winner_code));
+            window.attron(COLOR_PAIR(winner_code + 1));
             window.mvaddch(9, 7, '#');
-            window.attroff(COLOR_PAIR(1 + winner_code));
+            window.attroff(COLOR_PAIR(winner_code + 1));
             break;
         }
         window.getch();

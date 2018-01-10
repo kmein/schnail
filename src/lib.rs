@@ -1,12 +1,12 @@
 #![feature(entry_and_modify)]
-extern crate rand;
 extern crate pancurses;
+extern crate rand;
 
 use pancurses::{Window, COLOR_PAIR};
 use rand::Rng;
 use std::collections::HashMap;
 
-pub const GOAL: u8 = 8;
+pub const GOAL: i32 = 8;
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug, Hash, Clone)]
 pub enum Colour {
@@ -18,7 +18,7 @@ pub enum Colour {
     Orange,
 }
 
-fn from_colour_code(code: u8) -> Option<Colour> {
+fn from_colour_code(code: i32) -> Option<Colour> {
     match code {
         0 => Some(Colour::Red),
         1 => Some(Colour::Yellow),
@@ -30,7 +30,7 @@ fn from_colour_code(code: u8) -> Option<Colour> {
     }
 }
 
-pub fn to_colour_code(colour: &Colour) -> u8 {
+pub fn to_colour_code(colour: &Colour) -> i32 {
     match *colour {
         Colour::Red => 0,
         Colour::Yellow => 1,
@@ -48,7 +48,7 @@ pub fn roll() -> Colour {
 
 #[derive(Debug, Default, Clone)]
 pub struct Board {
-    snails: HashMap<Colour, u8>,
+    snails: HashMap<Colour, i32>,
 }
 
 impl Board {
@@ -77,19 +77,20 @@ impl Board {
     pub fn draw(&self, window: &Window) {
         for y in 0..6 {
             window.attron(COLOR_PAIR(0));
-            window.mvaddch(y as i32, 2, '|');
-            window.mvaddch(y as i32, GOAL as i32 * 2, '|');
+            window.mvaddch(y, 2, '|');
+            window.mvaddch(y, GOAL * 2, '|');
         }
 
         for y in 0..6 {
             let colour = from_colour_code(y).unwrap();
-            let &x = self.snails.get(&colour).unwrap();
+            let x = self.snails[&colour];
             window.attron(COLOR_PAIR(y as u64 + 1));
-            window.mvaddstr(y as i32, x as i32 * 2, "@@");
+            window.mvaddstr(y, x * 2, "@@");
+            window.attroff(COLOR_PAIR(y as u64 + 1));
         }
 
-        for x in 0..GOAL+1 {
-            window.mvaddstr(6, x as i32 * 2, &format!("{}", x));
+        for x in 0..GOAL + 1 {
+            window.mvaddstr(6, x * 2, &format!("{}", x));
         }
     }
 }

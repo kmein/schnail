@@ -1,5 +1,5 @@
 # schnell + snail = schnail
-*Alex Randolph's board game »Tempo, kleine Schnecke« in Rust*
+*Alex Randolph's board game »[Tempo, kleine Schnecke](https://de.wikipedia.org/wiki/Tempo,_kleine_Schnecke)« in Rust*
 
 This program is a simulation of the game's simple version. Its rules are:
 

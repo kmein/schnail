@@ -1,4 +1,4 @@
-# schnell + snail = schnail
+# schnell + snail = schnail [![Build Status](https://travis-ci.org/kmein/schnail.svg?branch=master)](https://travis-ci.org/kmein/schnail)
 *Alex Randolph's board game »[Tempo, kleine Schnecke](https://de.wikipedia.org/wiki/Tempo,_kleine_Schnecke)« in Rust*
 
 This program is a simulation of the game's simple version. Its rules are:

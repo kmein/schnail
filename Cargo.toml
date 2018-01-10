@@ -4,3 +4,5 @@ version = "0.1.0"
 authors = ["kmein <kieran.meinhardt@gmail.com>"]
 
 [dependencies]
+rand = "*"
+pancurses = "*"

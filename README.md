@@ -10,3 +10,5 @@ This program is a simulation of the game's simple version. Its rules are:
 * The snail that is first to cross the finish line wins the game.
 
 You can run it with `cargo run`.
+
+[![asciicast](https://asciinema.org/a/jGnBcWIcYrLYyS2wq5NegB7vn.png)](https://asciinema.org/a/jGnBcWIcYrLYyS2wq5NegB7vn)

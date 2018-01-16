@@ -55,6 +55,16 @@ pub fn replicate(count: i32, ch: char) -> String {
     result
 }
 
+pub fn with_colour_pair<F>(window: &Window, colour: i32, action: F)
+where
+    F: Fn(),
+{
+    let pair = COLOR_PAIR(colour as u64);
+    window.attron(pair);
+    action();
+    window.attroff(pair);
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct Board {
     snails: HashMap<Colour, i32>,
@@ -88,14 +98,12 @@ impl Board {
             window.attron(COLOR_PAIR(0));
             window.mvaddch(y, SCALE, '|');
             window.mvaddch(y, GOAL * SCALE, '|');
-        }
 
-        for y in 0..6 {
             let colour = from_colour_code(y).unwrap();
             let x = self.snails[&colour];
-            window.attron(COLOR_PAIR(y as u64 + 1));
-            window.mvaddstr(y, x * SCALE, &replicate(SCALE, '@'));
-            window.attroff(COLOR_PAIR(y as u64 + 1));
+            with_colour_pair(&window, y, || {
+                window.mvaddstr(y, x * SCALE, &replicate(SCALE, '@'));
+            });
         }
 
         for x in 0..GOAL + 1 {

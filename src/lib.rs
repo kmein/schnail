@@ -101,7 +101,7 @@ impl Board {
 
             let colour = from_colour_code(y).unwrap();
             let x = self.snails[&colour];
-            with_colour_pair(&window, y, || {
+            with_colour_pair(window, y, || {
                 window.mvaddstr(y, x * SCALE, &replicate(SCALE, '@'));
             });
         }

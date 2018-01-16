@@ -89,8 +89,8 @@ impl Board {
     pub fn winner(&self) -> Option<Colour> {
         self.snails
             .iter()
-            .find(|&(_, p)| *p == GOAL)
-            .map(|t| t.0.clone())
+            .find(|s| *s.1 == GOAL)
+            .map(|s| s.0.clone())
     }
 
     pub fn draw(&self, window: &Window) {

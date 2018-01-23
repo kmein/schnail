@@ -24,22 +24,20 @@ fn main() {
         window.clear();
 
         let dice = (roll(), roll());
-        {
-            window.mvaddstr(8, 0, "dice ");
-            window.with_colour_pair(to_colour_code(&dice.0), || {
-                window.mvaddch(8, 5, '#');
-            });
-            window.mvaddch(8, 6, ' ');
-            window.with_colour_pair(to_colour_code(&dice.1), || {
-                window.mvaddch(8, 7, '#');
-            });
-        }
+
+        window.mvaddstr(8, 0, "dice ");
+        window.with_colour_pair(to_colour_code(&dice.0), || {
+            window.mvaddch(8, 5, '#');
+        });
+        window.mvaddch(8, 6, ' ');
+        window.with_colour_pair(to_colour_code(&dice.1), || {
+            window.mvaddch(8, 7, '#');
+        });
 
         board.advance(dice.0);
         board.advance(dice.1);
         board.draw(&window);
         if let Some(winner) = board.winner() {
-            // window.mvaddstr(to_colour_code(&winner) as i32, GOAL as i32*2+8, "winner");
             window.mvaddstr(9, 0, "winner ");
             window.with_colour_pair(to_colour_code(&winner), || {
                 window.mvaddch(9, 7, '#');

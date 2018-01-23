@@ -55,20 +55,21 @@ pub fn replicate(count: i32, ch: char) -> String {
     result
 }
 
-pub fn with_colour_pair<F>(window: &Window, colour: i32, action: F)
-where
-    F: Fn(),
-{
-    let pair = COLOR_PAIR(colour as u64);
-    window.attron(pair);
-    action();
-    window.attroff(pair);
+pub trait WindowExt {
+    fn with_colour_pair<F: Fn()>(&self, colour: i32, action: F);
+}
+
+impl WindowExt for Window {
+    fn with_colour_pair<F: Fn()>(&self, colour: i32, action: F) {
+        let pair = COLOR_PAIR(colour as u64);
+        self.attron(pair);
+        action();
+        self.attroff(pair);
+    }
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct Board {
-    snails: HashMap<Colour, i32>,
-}
+pub struct Board(HashMap<Colour, i32>);
 
 impl Board {
     pub fn new() -> Self {
@@ -79,18 +80,15 @@ impl Board {
             snails.insert(colour, 0);
         }
 
-        Board { snails: snails }
+        Board(snails)
     }
 
     pub fn advance(&mut self, colour: Colour) {
-        self.snails.entry(colour).and_modify(|s| *s += 1);
+        self.0.entry(colour).and_modify(|s| *s += 1);
     }
 
     pub fn winner(&self) -> Option<Colour> {
-        self.snails
-            .iter()
-            .find(|s| *s.1 == GOAL)
-            .map(|s| s.0.clone())
+        self.0.iter().find(|s| *s.1 == GOAL).map(|s| s.0.clone())
     }
 
     pub fn draw(&self, window: &Window) {
@@ -100,8 +98,8 @@ impl Board {
             window.mvaddch(y, GOAL * SCALE, '|');
 
             let colour = from_colour_code(y).unwrap();
-            let x = self.snails[&colour];
-            with_colour_pair(window, y, || {
+            let x = self.0[&colour];
+            window.with_colour_pair(y, || {
                 window.mvaddstr(y, x * SCALE, &replicate(SCALE, '@'));
             });
         }

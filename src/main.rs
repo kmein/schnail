@@ -26,11 +26,11 @@ fn main() {
         let dice = (roll(), roll());
         {
             window.mvaddstr(8, 0, "dice ");
-            with_colour_pair(&window, to_colour_code(&dice.0), || {
+            window.with_colour_pair(to_colour_code(&dice.0), || {
                 window.mvaddch(8, 5, '#');
             });
             window.mvaddch(8, 6, ' ');
-            with_colour_pair(&window, to_colour_code(&dice.1), || {
+            window.with_colour_pair(to_colour_code(&dice.1), || {
                 window.mvaddch(8, 7, '#');
             });
         }
@@ -41,7 +41,7 @@ fn main() {
         if let Some(winner) = board.winner() {
             // window.mvaddstr(to_colour_code(&winner) as i32, GOAL as i32*2+8, "winner");
             window.mvaddstr(9, 0, "winner ");
-            with_colour_pair(&window, to_colour_code(&winner), || {
+            window.with_colour_pair(to_colour_code(&winner), || {
                 window.mvaddch(9, 7, '#');
             });
             break;

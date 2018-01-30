@@ -6,9 +6,9 @@ use schnail::*;
 use pancurses::*;
 
 fn main() {
+    // this needs to come before ncurses is initialised. otherwise the usage text will look shite
     let matches = clap::App::new("schnail")
         .about("An exciting simulation of »Tempo, kleine Schnecke!«")
-        .version("0.1.0")
         .arg_from_usage("[goal] 'Length of the race track (default 8)'")
         .get_matches();
 

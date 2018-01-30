@@ -1,8 +1,9 @@
 [package]
+authors = ["kmein <kieran.meinhardt@gmail.com>"]
 name = "schnail"
 version = "0.1.0"
-authors = ["kmein <kieran.meinhardt@gmail.com>"]
 
 [dependencies]
-rand = "*"
+clap = "2.29.2"
 pancurses = "*"
+rand = "*"

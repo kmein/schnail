@@ -1,4 +1,3 @@
-#![feature(entry_and_modify)]
 extern crate pancurses;
 extern crate rand;
 
@@ -6,9 +5,6 @@ use pancurses::{Window, COLOR_PAIR};
 use rand::Rng;
 use std::collections::HashMap;
 use std::iter::repeat;
-
-const GOAL: i32 = 8;
-const SCALE: i32 = 2;
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone, Copy)]
 pub enum Colour {
@@ -51,47 +47,56 @@ impl WindowExt for Window {
 }
 
 #[derive(Debug, Default, Clone)]
-pub struct Board(HashMap<Colour, i32>);
+pub struct Board {
+    scale: i32,
+    goal: i32,
+    snails: HashMap<Colour, i32>,
+}
 
 impl Board {
-    pub fn new() -> Self {
+    pub fn new(goal: i32) -> Self {
         use Colour::*;
+
+        let scale = (goal as f32).log10() as i32 + 2;
 
         let mut snails = HashMap::new();
         for colour in vec![Red, Yellow, Green, Pink, Blue, Orange] {
             snails.insert(colour, 0);
         }
 
-        Board(snails)
+        Board {
+            snails,
+            scale,
+            goal,
+        }
     }
 
     pub fn advance(&mut self, colour: Colour) {
-        self.0.entry(colour).and_modify(|s| *s += 1);
+        self.snails.get_mut(&colour).map(|s| *s += 1);
     }
 
     pub fn winner(&self) -> Option<Colour> {
-        self.0.iter().find(|s| *s.1 == GOAL).map(|s| s.0.clone())
+        self.snails.iter().find(|s| *s.1 == self.goal).map(|s| *s.0)
     }
 
     pub fn draw(&self, window: &Window) {
         for y in 0..6 {
             window.attron(COLOR_PAIR(0));
-            window.mvaddch(y, SCALE, '|');
-            window.mvaddch(y, GOAL * SCALE, '|');
+            window.mvaddch(y, self.scale, '|');
+            window.mvaddch(y, self.goal * self.scale, '|');
 
             let colour = from_colour_code(y).unwrap();
-            let x = self.0[&colour];
             window.with_colour_pair(y, || {
                 window.mvaddstr(
                     y,
-                    x * SCALE,
-                    &repeat('@').take(SCALE as usize).collect::<String>(),
+                    self.snails[&colour] * self.scale,
+                    &repeat('@').take(self.scale as usize).collect::<String>(),
                 );
             });
         }
 
-        for x in 0..GOAL + 1 {
-            window.mvaddstr(6, x * SCALE, &format!("{}", x));
+        for x in 0..self.goal + 1 {
+            window.mvaddstr(6, x * self.scale, &format!("{}", x));
         }
     }
 }

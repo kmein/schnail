@@ -1,3 +1,4 @@
+extern crate clap;
 extern crate pancurses;
 extern crate schnail;
 
@@ -5,6 +6,12 @@ use schnail::*;
 use pancurses::*;
 
 fn main() {
+    let matches = clap::App::new("schnail")
+        .about("An exciting simulation of »Tempo, kleine Schnecke!«")
+        .version("0.1.0")
+        .arg_from_usage("[goal] 'Length of the race track (default 8)'")
+        .get_matches();
+
     let window = initscr();
     start_color();
     curs_set(0);
@@ -17,7 +24,12 @@ fn main() {
     init_pair(5, COLOR_BLUE, COLOR_BLACK);
     init_pair(6, COLOR_WHITE, COLOR_BLACK);
 
-    let mut board = Board::new();
+    let mut board = Board::new(
+        matches
+            .value_of("goal")
+            .and_then(|goal| goal.parse().ok())
+            .unwrap_or(8),
+    );
     board.draw(&window);
 
     loop {

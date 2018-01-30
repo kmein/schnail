@@ -5,11 +5,12 @@ extern crate rand;
 use pancurses::{Window, COLOR_PAIR};
 use rand::Rng;
 use std::collections::HashMap;
+use std::iter::repeat;
 
 const GOAL: i32 = 8;
 const SCALE: i32 = 2;
 
-#[derive(PartialEq, PartialOrd, Eq, Ord, Debug, Hash, Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone, Copy)]
 pub enum Colour {
     Red,
     Yellow,
@@ -31,28 +32,9 @@ fn from_colour_code(code: i32) -> Option<Colour> {
     }
 }
 
-pub fn to_colour_code(colour: &Colour) -> i32 {
-    match *colour {
-        Colour::Red => 0,
-        Colour::Yellow => 1,
-        Colour::Green => 2,
-        Colour::Pink => 3,
-        Colour::Blue => 4,
-        Colour::Orange => 5,
-    }
-}
-
 pub fn roll() -> Colour {
     let n = rand::thread_rng().gen_range(0, 6);
     from_colour_code(n).unwrap()
-}
-
-pub fn replicate(count: i32, ch: char) -> String {
-    let mut result = String::new();
-    for _ in 0..count {
-        result.push(ch)
-    }
-    result
 }
 
 pub trait WindowExt {
@@ -100,7 +82,11 @@ impl Board {
             let colour = from_colour_code(y).unwrap();
             let x = self.0[&colour];
             window.with_colour_pair(y, || {
-                window.mvaddstr(y, x * SCALE, &replicate(SCALE, '@'));
+                window.mvaddstr(
+                    y,
+                    x * SCALE,
+                    &repeat('@').take(SCALE as usize).collect::<String>(),
+                );
             });
         }
 

@@ -82,7 +82,7 @@ impl Board {
     pub fn winners(&self) -> Vec<Colour> {
         self.snails
             .iter()
-            .filter(|s| *s.1 == self.goal)
+            .filter(|s| *s.1 >= self.goal)
             .map(|s| *s.0)
             .collect()
     }

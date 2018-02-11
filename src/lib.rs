@@ -64,7 +64,7 @@ impl Board {
         let scale = (goal as f32).log10() as i32 + 2;
 
         let mut snails = HashMap::new();
-        for colour in vec![Red, Yellow, Green, Pink, Blue, Orange] {
+        for &colour in &[Red, Yellow, Green, Pink, Blue, Orange] {
             snails.insert(colour, 0);
         }
 

@@ -51,7 +51,7 @@ fn main() {
         board.draw(&window);
 
         let winners = board.winners();
-        if winners.len() > 0 {
+        if !winners.is_empty() {
             window.mvaddstr(9, 0, "winner ");
             for (idx, &winner) in winners.iter().enumerate() {
                 window.with_colour_pair(winner as i32, || {

@@ -12,6 +12,7 @@ fn main() {
         .about("An exciting simulation of »Tempo, kleine Schnecke!«")
         .arg_from_usage("[dice] -d, --dice=[DICE] 'Number of dice (default 2)'")
         .arg_from_usage("[goal] 'Length of the race track (default 8)'")
+        .arg_from_usage("[interactive] -i, --interactive 'Wait after every round (default false)'")
         .get_matches();
 
     let window = initscr();
@@ -52,15 +53,23 @@ fn main() {
 
         let winners = board.winners();
         if !winners.is_empty() {
-            window.mvaddstr(9, 0, "winner ");
+            window.mvaddstr(9, 0, WINNER_STR);
             for (idx, &winner) in winners.iter().enumerate() {
                 window.with_colour_pair(winner as i32, || {
-                    window.mvaddch(9, 7 + 2*idx as i32, '#');
+                    window.mvaddch(9, (WINNER_STR.len() + 1 + 2*idx) as i32, '#');
                 });
             }
             break;
         }
-        window.getch();
+
+        if matches.is_present("interactive") {
+            window.getch();
+        } else {
+            use std::time::Duration;
+            use std::thread::sleep;
+            sleep(Duration::from_millis(100));
+            window.refresh();
+        }
     }
 
     window.refresh();

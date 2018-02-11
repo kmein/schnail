@@ -6,6 +6,9 @@ use schnail::*;
 use pancurses::*;
 use std::iter::repeat;
 
+const DICE_STR: &'static str = "dice";
+const WINNER_STR: &'static str = "winner";
+
 fn main() {
     // this needs to come before ncurses is initialised. otherwise the usage text will look shite
     let matches = clap::App::new("schnail")
@@ -39,12 +42,12 @@ fn main() {
 
     loop {
         window.clear();
-        window.mvaddstr(8, 0, "dice ");
+        window.mvaddstr(8, 0, DICE_STR);
 
         let dice = repeat(roll).map(|d| d()).take(num_dice).collect::<Vec<_>>();
         for (idx, &colour) in dice.iter().enumerate() {
             window.with_colour_pair(colour as i32, || {
-                window.mvaddch(8, 5 + 2*idx as i32, '#');
+                window.mvaddch(8, (DICE_STR.len() + 1 + 2*idx) as i32, '#');
             });
             board.advance(colour);
         }

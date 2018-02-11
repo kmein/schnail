@@ -1,3 +1,4 @@
+#![feature(try_from)]
 extern crate pancurses;
 extern crate rand;
 
@@ -5,6 +6,7 @@ use pancurses::{Window, COLOR_PAIR};
 use rand::Rng;
 use std::collections::HashMap;
 use std::iter::repeat;
+use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone, Copy)]
 pub enum Colour {
@@ -16,21 +18,23 @@ pub enum Colour {
     Orange,
 }
 
-fn from_colour_code(code: i32) -> Option<Colour> {
-    match code {
-        0 => Some(Colour::Red),
-        1 => Some(Colour::Yellow),
-        2 => Some(Colour::Green),
-        3 => Some(Colour::Pink),
-        4 => Some(Colour::Blue),
-        5 => Some(Colour::Orange),
-        _ => None,
+impl TryFrom<i32> for Colour {
+    type Error = ();
+    fn try_from(code: i32) -> Result<Self, Self::Error> {
+        match code {
+            0 => Ok(Colour::Red),
+            1 => Ok(Colour::Yellow),
+            2 => Ok(Colour::Green),
+            3 => Ok(Colour::Pink),
+            4 => Ok(Colour::Blue),
+            5 => Ok(Colour::Orange),
+            _ => Err(()),
+        }
     }
 }
 
 pub fn roll() -> Colour {
-    let n = rand::thread_rng().gen_range(0, 6);
-    from_colour_code(n).unwrap()
+    rand::thread_rng().gen_range(0, 6).try_into().unwrap()
 }
 
 pub trait WindowExt {
@@ -85,7 +89,7 @@ impl Board {
             window.mvaddch(y, self.scale, '|');
             window.mvaddch(y, self.goal * self.scale, '|');
 
-            let colour = from_colour_code(y).unwrap();
+            let colour = y.try_into().unwrap();
             window.with_colour_pair(y, || {
                 window.mvaddstr(
                     y,

@@ -6,8 +6,8 @@ use schnail::*;
 use pancurses::*;
 use std::iter::repeat;
 
-const DICE_STR: &'static str = "dice";
-const WINNER_STR: &'static str = "winner";
+const DICE_STR: &str = "dice";
+const WINNER_STR: &str = "winner";
 
 fn main() {
     // this needs to come before ncurses is initialised. otherwise the usage text will look shite
@@ -46,8 +46,9 @@ fn main() {
 
         let dice = repeat(roll).map(|d| d()).take(num_dice).collect::<Vec<_>>();
         for (idx, &colour) in dice.iter().enumerate() {
-            window.with_colour_pair(colour as i32, || {
-                window.mvaddch(8, (DICE_STR.len() + 1 + 2*idx) as i32, '#');
+            window.with_colour_pair(colour, || {
+                let x_pos = DICE_STR.len() + 1 + 2 * idx;
+                window.mvaddch(8, x_pos as i32, '#');
             });
             board.advance(colour);
         }
@@ -58,8 +59,9 @@ fn main() {
         if !winners.is_empty() {
             window.mvaddstr(9, 0, WINNER_STR);
             for (idx, &winner) in winners.iter().enumerate() {
-                window.with_colour_pair(winner as i32, || {
-                    window.mvaddch(9, (WINNER_STR.len() + 1 + 2*idx) as i32, '#');
+                window.with_colour_pair(winner, || {
+                    let x_pos = WINNER_STR.len() + 1 + 2 * idx;
+                    window.mvaddch(9, x_pos as i32, '#');
                 });
             }
             break;

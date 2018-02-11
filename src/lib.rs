@@ -79,8 +79,12 @@ impl Board {
         self.snails.get_mut(&colour).map(|s| *s += 1);
     }
 
-    pub fn winner(&self) -> Option<Colour> {
-        self.snails.iter().find(|s| *s.1 == self.goal).map(|s| *s.0)
+    pub fn winners(&self) -> Vec<Colour> {
+        self.snails
+            .iter()
+            .filter(|s| *s.1 == self.goal)
+            .map(|s| *s.0)
+            .collect()
     }
 
     pub fn draw(&self, window: &Window) {

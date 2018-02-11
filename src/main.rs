@@ -49,11 +49,15 @@ fn main() {
         board.advance(dice.0);
         board.advance(dice.1);
         board.draw(&window);
-        if let Some(winner) = board.winner() {
+
+        let winners = board.winners();
+        if winners.len() > 0 {
             window.mvaddstr(9, 0, "winner ");
-            window.with_colour_pair(winner as i32, || {
-                window.mvaddch(9, 7, '#');
-            });
+            for (idx, &winner) in winners.iter().enumerate() {
+                window.with_colour_pair(winner as i32, || {
+                    window.mvaddch(9, 7 + 2*idx as i32, '#');
+                });
+            }
             break;
         }
         window.getch();

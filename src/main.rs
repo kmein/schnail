@@ -4,11 +4,13 @@ extern crate schnail;
 
 use schnail::*;
 use pancurses::*;
+use std::iter::repeat;
 
 fn main() {
     // this needs to come before ncurses is initialised. otherwise the usage text will look shite
     let matches = clap::App::new("schnail")
         .about("An exciting simulation of »Tempo, kleine Schnecke!«")
+        .arg_from_usage("[dice] -d, --dice=[DICE] 'Number of dice (default 2)'")
         .arg_from_usage("[goal] 'Length of the race track (default 8)'")
         .get_matches();
 
@@ -30,24 +32,22 @@ fn main() {
             .and_then(|goal| goal.parse().ok())
             .unwrap_or(8),
     );
+    let num_dice = matches.value_of("dice").and_then(|dice| dice.parse().ok()).unwrap_or(2);
+
     board.draw(&window);
 
     loop {
         window.clear();
-
-        let dice = (roll(), roll());
-
         window.mvaddstr(8, 0, "dice ");
-        window.with_colour_pair(dice.0 as i32, || {
-            window.mvaddch(8, 5, '#');
-        });
-        window.mvaddch(8, 6, ' ');
-        window.with_colour_pair(dice.1 as i32, || {
-            window.mvaddch(8, 7, '#');
-        });
 
-        board.advance(dice.0);
-        board.advance(dice.1);
+        let dice = repeat(roll).map(|d| d()).take(num_dice).collect::<Vec<_>>();
+        for (idx, &colour) in dice.iter().enumerate() {
+            window.with_colour_pair(colour as i32, || {
+                window.mvaddch(8, 5 + 2*idx as i32, '#');
+            });
+            board.advance(colour);
+        }
+
         board.draw(&window);
 
         let winners = board.winners();

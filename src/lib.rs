@@ -3,7 +3,7 @@ extern crate pancurses;
 extern crate rand;
 
 use pancurses::{Window, COLOR_PAIR};
-use rand::Rng;
+use rand::{Rand, Rng};
 use std::collections::HashMap;
 use std::iter::repeat;
 use std::convert::{TryFrom, TryInto};
@@ -33,17 +33,33 @@ impl TryFrom<i32> for Colour {
     }
 }
 
-pub fn roll() -> Colour {
-    rand::thread_rng().gen_range(0, 6).try_into().unwrap()
+impl Into<u64> for Colour {
+    fn into(self) -> u64 {
+        self as u64
+    }
+}
+
+impl Rand for Colour {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        use Colour::*;
+        *rng.choose(&[Red, Yellow, Green, Pink, Blue, Orange]).unwrap()
+    }
 }
 
 pub trait WindowExt {
-    fn with_colour_pair<F: Fn()>(&self, colour: i32, action: F);
+    fn with_colour_pair<I, F>(&self, colour: I, action: F)
+    where
+        F: Fn(),
+        I: Into<u64>;
 }
 
 impl WindowExt for Window {
-    fn with_colour_pair<F: Fn()>(&self, colour: i32, action: F) {
-        let pair = COLOR_PAIR(colour as u64);
+    fn with_colour_pair<I, F>(&self, colour: I, action: F)
+    where
+        F: Fn(),
+        I: Into<u64>,
+    {
+        let pair = COLOR_PAIR(colour.into());
         self.attron(pair);
         action();
         self.attroff(pair);
@@ -94,7 +110,7 @@ impl Board {
             window.mvaddch(y, self.goal * self.scale, '|');
 
             let colour = y.try_into().unwrap();
-            window.with_colour_pair(y, || {
+            window.with_colour_pair(y as u64, || {
                 window.mvaddstr(
                     y,
                     self.snails[&colour] * self.scale,

@@ -1,10 +1,12 @@
 extern crate clap;
 extern crate pancurses;
+extern crate rand;
 extern crate schnail;
 
 use schnail::*;
 use pancurses::*;
 use std::iter::repeat;
+use rand::Rand;
 
 const DICE_STR: &str = "dice";
 const WINNER_STR: &str = "winner";
@@ -36,7 +38,10 @@ fn main() {
             .and_then(|goal| goal.parse().ok())
             .unwrap_or(8),
     );
-    let num_dice = matches.value_of("dice").and_then(|dice| dice.parse().ok()).unwrap_or(2);
+    let num_dice = matches
+        .value_of("dice")
+        .and_then(|dice| dice.parse().ok())
+        .unwrap_or(2);
 
     board.draw(&window);
 
@@ -44,7 +49,10 @@ fn main() {
         window.clear();
         window.mvaddstr(8, 0, DICE_STR);
 
-        let dice = repeat(roll).map(|d| d()).take(num_dice).collect::<Vec<_>>();
+        let dice = repeat(Rand::rand)
+            .map(|r| r(&mut rand::thread_rng()))
+            .take(num_dice)
+            .collect::<Vec<_>>();
         for (idx, &colour) in dice.iter().enumerate() {
             window.with_colour_pair(colour, || {
                 let x_pos = DICE_STR.len() + 1 + 2 * idx;
@@ -72,7 +80,7 @@ fn main() {
         } else {
             use std::time::Duration;
             use std::thread::sleep;
-            sleep(Duration::from_millis(100));
+            sleep(Duration::from_millis(75));
             window.refresh();
         }
     }

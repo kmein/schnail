@@ -53,12 +53,12 @@ fn main() {
             .map(|r| r(&mut rand::thread_rng()))
             .take(num_dice)
             .collect::<Vec<_>>();
-        for (idx, &colour) in dice.iter().enumerate() {
-            window.with_colour_pair(colour, || {
+        for (idx, &color) in dice.iter().enumerate() {
+            window.with_color_pair(color, || {
                 let x_pos = DICE_STR.len() + 1 + 2 * idx;
                 window.mvaddch(8, x_pos as i32, '#');
             });
-            board.advance(colour);
+            board.advance(color);
         }
 
         board.draw(&window);
@@ -67,7 +67,7 @@ fn main() {
         if !winners.is_empty() {
             window.mvaddstr(9, 0, WINNER_STR);
             for (idx, &winner) in winners.iter().enumerate() {
-                window.with_colour_pair(winner, || {
+                window.with_color_pair(winner, || {
                     let x_pos = WINNER_STR.len() + 1 + 2 * idx;
                     window.mvaddch(9, x_pos as i32, '#');
                 });

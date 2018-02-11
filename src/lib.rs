@@ -9,7 +9,7 @@ use std::iter::repeat;
 use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, PartialEq, PartialOrd, Ord, Eq, Hash, Clone, Copy)]
-pub enum Colour {
+pub enum Color {
     Red,
     Yellow,
     Green,
@@ -18,48 +18,48 @@ pub enum Colour {
     Orange,
 }
 
-impl TryFrom<i32> for Colour {
+impl TryFrom<i32> for Color {
     type Error = ();
     fn try_from(code: i32) -> Result<Self, Self::Error> {
         match code {
-            0 => Ok(Colour::Red),
-            1 => Ok(Colour::Yellow),
-            2 => Ok(Colour::Green),
-            3 => Ok(Colour::Pink),
-            4 => Ok(Colour::Blue),
-            5 => Ok(Colour::Orange),
+            0 => Ok(Color::Red),
+            1 => Ok(Color::Yellow),
+            2 => Ok(Color::Green),
+            3 => Ok(Color::Pink),
+            4 => Ok(Color::Blue),
+            5 => Ok(Color::Orange),
             _ => Err(()),
         }
     }
 }
 
-impl Into<u64> for Colour {
+impl Into<u64> for Color {
     fn into(self) -> u64 {
         self as u64
     }
 }
 
-impl Rand for Colour {
+impl Rand for Color {
     fn rand<R: Rng>(rng: &mut R) -> Self {
-        use Colour::*;
+        use Color::*;
         *rng.choose(&[Red, Yellow, Green, Pink, Blue, Orange]).unwrap()
     }
 }
 
 pub trait WindowExt {
-    fn with_colour_pair<I, F>(&self, colour: I, action: F)
+    fn with_color_pair<I, F>(&self, color: I, action: F)
     where
         F: Fn(),
         I: Into<u64>;
 }
 
 impl WindowExt for Window {
-    fn with_colour_pair<I, F>(&self, colour: I, action: F)
+    fn with_color_pair<I, F>(&self, color: I, action: F)
     where
         F: Fn(),
         I: Into<u64>,
     {
-        let pair = COLOR_PAIR(colour.into());
+        let pair = COLOR_PAIR(color.into());
         self.attron(pair);
         action();
         self.attroff(pair);
@@ -70,18 +70,18 @@ impl WindowExt for Window {
 pub struct Board {
     scale: i32,
     goal: i32,
-    snails: HashMap<Colour, i32>,
+    snails: HashMap<Color, i32>,
 }
 
 impl Board {
     pub fn new(goal: i32) -> Self {
-        use Colour::*;
+        use Color::*;
 
         let scale = (goal as f32).log10() as i32 + 2;
 
         let mut snails = HashMap::new();
-        for &colour in &[Red, Yellow, Green, Pink, Blue, Orange] {
-            snails.insert(colour, 0);
+        for &color in &[Red, Yellow, Green, Pink, Blue, Orange] {
+            snails.insert(color, 0);
         }
 
         Board {
@@ -91,11 +91,11 @@ impl Board {
         }
     }
 
-    pub fn advance(&mut self, colour: Colour) {
-        self.snails.get_mut(&colour).map(|s| *s += 1);
+    pub fn advance(&mut self, color: Color) {
+        self.snails.get_mut(&color).map(|s| *s += 1);
     }
 
-    pub fn winners(&self) -> Vec<Colour> {
+    pub fn winners(&self) -> Vec<Color> {
         self.snails
             .iter()
             .filter(|s| *s.1 >= self.goal)
@@ -109,11 +109,11 @@ impl Board {
             window.mvaddch(y, self.scale, '|');
             window.mvaddch(y, self.goal * self.scale, '|');
 
-            let colour = y.try_into().unwrap();
-            window.with_colour_pair(y as u64, || {
+            let color = y.try_into().unwrap();
+            window.with_color_pair(y as u64, || {
                 window.mvaddstr(
                     y,
-                    self.snails[&colour] * self.scale,
+                    self.snails[&color] * self.scale,
                     &repeat('@').take(self.scale as usize).collect::<String>(),
                 );
             });

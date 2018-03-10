@@ -45,11 +45,9 @@ fn main() {
 
     board.draw(&window);
 
-    let (y_offset, x_offset) = board.yx_offset();
-
     loop {
         window.clear();
-        window.mvaddstr(y_offset + 8, x_offset + 0, DICE_STR);
+        board.display.add_str(&window, 8, 0, DICE_STR);
 
         let dice = repeat(Rand::rand)
             .map(|r| r(&mut rand::thread_rng()))
@@ -58,7 +56,7 @@ fn main() {
         for (idx, &color) in dice.iter().enumerate() {
             window.with_color_pair(color, || {
                 let x_pos = DICE_STR.len() + 1 + 2 * idx;
-                window.mvaddch(y_offset + 8, x_offset + x_pos as i32, '#');
+                board.display.add_str(&window, 8, x_pos as i32, '#');
             });
             board.advance(color);
         }
@@ -67,11 +65,11 @@ fn main() {
 
         let winners = board.winners();
         if !winners.is_empty() {
-            window.mvaddstr(y_offset + 9, x_offset + 0, WINNER_STR);
+            board.display.add_str(&window, 9, 0, WINNER_STR);
             for (idx, &winner) in winners.iter().enumerate() {
                 window.with_color_pair(winner, || {
                     let x_pos = WINNER_STR.len() + 1 + 2 * idx;
-                    window.mvaddch(y_offset + 9, x_offset + x_pos as i32, '#');
+                    board.display.add_str(&window, 9, x_pos as i32, '#');
                 });
             }
             break;

@@ -3,6 +3,7 @@ extern crate pancurses;
 extern crate rand;
 
 use pancurses::{Window, COLOR_PAIR};
+use std::string::ToString;
 use rand::{Rand, Rng};
 use std::collections::HashMap;
 use std::iter::repeat;
@@ -68,19 +69,40 @@ impl WindowExt for Window {
 }
 
 #[derive(Debug, Default, Clone)]
+pub struct Display {
+    screen_hw: (i32, i32),
+    board_hw: (i32, i32),
+}
+
+impl Display {
+    fn hw_offset(&self) -> (i32, i32) {
+        let (screen_h, screen_w) = self.screen_hw;
+        let (board_h, board_w) = self.board_hw;
+        ((screen_h - board_h) / 2, (screen_w - board_w) / 2)
+    }
+
+    pub fn add_str<S: ToString>(&self, window: &Window, y: i32, x: i32, value: S) {
+        let (y_offset, x_offset) = self.hw_offset();
+        window.mvaddstr(y_offset + y, x_offset + x, &value.to_string());
+    }
+}
+
+
+#[derive(Debug, Default, Clone)]
 pub struct Board {
     goal: i32,
     snails: HashMap<Color, i32>,
     scale: i32,
-    max_yx: (i32, i32),
+    pub display: Display,
 }
 
 impl Board {
     pub fn new(goal: i32, window: &Window) -> Self {
         use Color::*;
 
-        let max_yx = window.get_max_yx();
         let scale = (goal as f32).log10() as i32 + 2;
+        let screen_hw = window.get_max_yx();
+        let board_hw = (6, goal * scale);
 
         let mut snails = HashMap::new();
         for &color in &[Red, Yellow, Green, Pink, Blue, Orange] {
@@ -91,7 +113,7 @@ impl Board {
             goal,
             snails,
             scale,
-            max_yx,
+            display: Display{screen_hw, board_hw},
         }
     }
 
@@ -107,33 +129,24 @@ impl Board {
             .collect()
     }
 
-    pub fn yx_offset(&self) -> (i32, i32) {
-        let board_width = self.goal * self.scale;
-        let board_height = 6;
-        let x_offset = (self.max_yx.1 - board_width) / 2;
-        let y_offset = (self.max_yx.0 - board_height) / 2;
-        (y_offset, x_offset)
-    }
-
     pub fn draw(&self, window: &Window) {
-        let (y_offset, x_offset) = self.yx_offset();
         for y in 0..6 {
             window.attron(COLOR_PAIR(0));
-            window.mvaddch(y_offset + y, x_offset + self.scale, '|');
-            window.mvaddch(y_offset + y, x_offset + self.goal * self.scale, '|');
+            self.display.add_str(window, y, self.scale, '|');
+            self.display.add_str(window, y, self.scale * self.goal, '|');
 
             let color = y.try_into().unwrap();
             window.with_color_pair(y as u64, || {
-                window.mvaddstr(
-                    y_offset + y,
-                    x_offset + self.snails[&color] * self.scale,
+                self.display.add_str(window,
+                    y,
+                    self.snails[&color] * self.scale,
                     &repeat('@').take(self.scale as usize).collect::<String>(),
                 );
             });
         }
 
         for x in 0..self.goal + 1 {
-            window.mvaddstr(y_offset + 6, x_offset + x * self.scale, &format!("{}", x));
+            self.display.add_str(window, 6, x * self.scale, &format!("{}", x));
         }
     }
 }

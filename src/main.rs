@@ -33,10 +33,12 @@ fn main() {
     init_pair(6, COLOR_WHITE, COLOR_BLACK);
 
     let mut display = Display::new(
-        matches
-            .value_of("goal")
-            .and_then(|goal| goal.parse().ok())
-            .unwrap_or(8),
+        Board::new(
+            matches
+                .value_of("goal")
+                .and_then(|goal| goal.parse().ok())
+                .unwrap_or(8),
+        ),
         &window,
     );
     let num_dice = matches

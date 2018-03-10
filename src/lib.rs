@@ -80,11 +80,12 @@ pub struct Display {
 }
 
 impl Display {
-    pub fn new(goal: i32, window: &Window) -> Self {
+    pub fn new(board: Board, window: &Window) -> Self {
+        let goal = board.goal;
         Display {
             screen_hw: window.get_max_yx(),
             board_hw: (6, goal * get_scale(goal)),
-            board: Board::new(goal),
+            board,
         }
     }
 
@@ -132,7 +133,7 @@ pub struct Board {
 }
 
 impl Board {
-    fn new(goal: i32) -> Self {
+    pub fn new(goal: i32) -> Self {
         use Color::*;
 
         let mut snails = HashMap::new();

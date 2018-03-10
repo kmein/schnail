@@ -32,22 +32,23 @@ fn main() {
     init_pair(5, COLOR_BLUE, COLOR_BLACK);
     init_pair(6, COLOR_WHITE, COLOR_BLACK);
 
-    let mut board = Board::new(
+    let mut display = Display::new(
         matches
             .value_of("goal")
             .and_then(|goal| goal.parse().ok())
-            .unwrap_or(8), &window
+            .unwrap_or(8),
+        &window,
     );
     let num_dice = matches
         .value_of("dice")
         .and_then(|dice| dice.parse().ok())
         .unwrap_or(2);
 
-    board.draw(&window);
+    display.draw(&window);
 
     loop {
         window.clear();
-        board.display.add_str(&window, 8, 0, DICE_STR);
+        display.add_str(&window, 8, 0, DICE_STR);
 
         let dice = repeat(Rand::rand)
             .map(|r| r(&mut rand::thread_rng()))
@@ -56,20 +57,20 @@ fn main() {
         for (idx, &color) in dice.iter().enumerate() {
             window.with_color_pair(color, || {
                 let x_pos = DICE_STR.len() + 1 + 2 * idx;
-                board.display.add_str(&window, 8, x_pos as i32, '#');
+                display.add_str(&window, 8, x_pos as i32, '#');
             });
-            board.advance(color);
+            display.board.advance(color);
         }
 
-        board.draw(&window);
+        display.draw(&window);
 
-        let winners = board.winners();
+        let winners = display.board.winners();
         if !winners.is_empty() {
-            board.display.add_str(&window, 9, 0, WINNER_STR);
+            display.add_str(&window, 9, 0, WINNER_STR);
             for (idx, &winner) in winners.iter().enumerate() {
                 window.with_color_pair(winner, || {
                     let x_pos = WINNER_STR.len() + 1 + 2 * idx;
-                    board.display.add_str(&window, 9, x_pos as i32, '#');
+                    display.add_str(&window, 9, x_pos as i32, '#');
                 });
             }
             break;

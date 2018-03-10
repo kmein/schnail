@@ -68,13 +68,26 @@ impl WindowExt for Window {
     }
 }
 
+fn get_scale(goal: i32) -> i32 {
+    (goal as f32).log10() as i32 + 2
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct Display {
     screen_hw: (i32, i32),
     board_hw: (i32, i32),
+    pub board: Board,
 }
 
 impl Display {
+    pub fn new(goal: i32, window: &Window) -> Self {
+        Display {
+            screen_hw: window.get_max_yx(),
+            board_hw: (6, goal * get_scale(goal)),
+            board: Board::new(goal),
+        }
+    }
+
     fn hw_offset(&self) -> (i32, i32) {
         let (screen_h, screen_w) = self.screen_hw;
         let (board_h, board_w) = self.board_hw;
@@ -85,24 +98,42 @@ impl Display {
         let (y_offset, x_offset) = self.hw_offset();
         window.mvaddstr(y_offset + y, x_offset + x, &value.to_string());
     }
-}
 
+    pub fn draw(&self, window: &Window) {
+        for y in 0..6 {
+            window.attron(COLOR_PAIR(0));
+            self.add_str(window, y, self.board.scale, '|');
+            self.add_str(window, y, self.board.scale * self.board.goal, '|');
+
+            let color = y.try_into().unwrap();
+            window.with_color_pair(y as u64, || {
+                self.add_str(
+                    window,
+                    y,
+                    self.board.snails[&color] * self.board.scale,
+                    &repeat('@')
+                        .take(self.board.scale as usize)
+                        .collect::<String>(),
+                );
+            });
+        }
+
+        for x in 0..self.board.goal + 1 {
+            self.add_str(window, 6, x * self.board.scale, &format!("{}", x));
+        }
+    }
+}
 
 #[derive(Debug, Default, Clone)]
 pub struct Board {
     goal: i32,
     snails: HashMap<Color, i32>,
     scale: i32,
-    pub display: Display,
 }
 
 impl Board {
-    pub fn new(goal: i32, window: &Window) -> Self {
+    fn new(goal: i32) -> Self {
         use Color::*;
-
-        let scale = (goal as f32).log10() as i32 + 2;
-        let screen_hw = window.get_max_yx();
-        let board_hw = (6, goal * scale);
 
         let mut snails = HashMap::new();
         for &color in &[Red, Yellow, Green, Pink, Blue, Orange] {
@@ -112,8 +143,7 @@ impl Board {
         Board {
             goal,
             snails,
-            scale,
-            display: Display{screen_hw, board_hw},
+            scale: get_scale(goal),
         }
     }
 
@@ -127,26 +157,5 @@ impl Board {
             .filter(|s| *s.1 >= self.goal)
             .map(|s| *s.0)
             .collect()
-    }
-
-    pub fn draw(&self, window: &Window) {
-        for y in 0..6 {
-            window.attron(COLOR_PAIR(0));
-            self.display.add_str(window, y, self.scale, '|');
-            self.display.add_str(window, y, self.scale * self.goal, '|');
-
-            let color = y.try_into().unwrap();
-            window.with_color_pair(y as u64, || {
-                self.display.add_str(window,
-                    y,
-                    self.snails[&color] * self.scale,
-                    &repeat('@').take(self.scale as usize).collect::<String>(),
-                );
-            });
-        }
-
-        for x in 0..self.goal + 1 {
-            self.display.add_str(window, 6, x * self.scale, &format!("{}", x));
-        }
     }
 }

@@ -42,7 +42,8 @@ impl Into<u64> for Color {
 impl Rand for Color {
     fn rand<R: Rng>(rng: &mut R) -> Self {
         use Color::*;
-        *rng.choose(&[Red, Yellow, Green, Pink, Blue, Orange]).unwrap()
+        *rng.choose(&[Red, Yellow, Green, Pink, Blue, Orange])
+            .unwrap()
     }
 }
 
@@ -68,15 +69,17 @@ impl WindowExt for Window {
 
 #[derive(Debug, Default, Clone)]
 pub struct Board {
-    scale: i32,
     goal: i32,
     snails: HashMap<Color, i32>,
+    scale: i32,
+    max_yx: (i32, i32),
 }
 
 impl Board {
-    pub fn new(goal: i32) -> Self {
+    pub fn new(goal: i32, window: &Window) -> Self {
         use Color::*;
 
+        let max_yx = window.get_max_yx();
         let scale = (goal as f32).log10() as i32 + 2;
 
         let mut snails = HashMap::new();
@@ -85,9 +88,10 @@ impl Board {
         }
 
         Board {
+            goal,
             snails,
             scale,
-            goal,
+            max_yx,
         }
     }
 
@@ -103,24 +107,33 @@ impl Board {
             .collect()
     }
 
+    pub fn yx_offset(&self) -> (i32, i32) {
+        let board_width = self.goal * self.scale;
+        let board_height = 6;
+        let x_offset = (self.max_yx.1 - board_width) / 2;
+        let y_offset = (self.max_yx.0 - board_height) / 2;
+        (y_offset, x_offset)
+    }
+
     pub fn draw(&self, window: &Window) {
+        let (y_offset, x_offset) = self.yx_offset();
         for y in 0..6 {
             window.attron(COLOR_PAIR(0));
-            window.mvaddch(y, self.scale, '|');
-            window.mvaddch(y, self.goal * self.scale, '|');
+            window.mvaddch(y_offset + y, x_offset + self.scale, '|');
+            window.mvaddch(y_offset + y, x_offset + self.goal * self.scale, '|');
 
             let color = y.try_into().unwrap();
             window.with_color_pair(y as u64, || {
                 window.mvaddstr(
-                    y,
-                    self.snails[&color] * self.scale,
+                    y_offset + y,
+                    x_offset + self.snails[&color] * self.scale,
                     &repeat('@').take(self.scale as usize).collect::<String>(),
                 );
             });
         }
 
         for x in 0..self.goal + 1 {
-            window.mvaddstr(6, x * self.scale, &format!("{}", x));
+            window.mvaddstr(y_offset + 6, x_offset + x * self.scale, &format!("{}", x));
         }
     }
 }
